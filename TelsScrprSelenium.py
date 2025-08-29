@@ -47,7 +47,7 @@ def OpenChat (chatNameLink):
     driver.get(link2)
     #driver.refresh
     print('GRUOP OPENED')
-    ti.sleep(10)
+    ti.sleep(15)
     driver.save_screenshot('DB&Imgs/tempImg/1-GRUP.png') 
 
 
@@ -92,7 +92,7 @@ print('4.1 Ingrese el grupo')
 
 GruopNameLink = input()
 
-if GruopNameLink is '':
+if GruopNameLink == '':
     GruopNameLink = 'OFERTAESPECIALESMXX'
 
 OpenChat(GruopNameLink)
@@ -135,11 +135,11 @@ while True:
     #from te body element extract all the body info un like page source that is limited
     #var5 = driver.execute_script("return document.body.innerHTML")
     #html_content = var.get_attribute('innerHTML')
+   
     html_content = driver.page_source
     soup = BeautifulSoup(html_content, 'html.parser')
-    var =  soup.prettify()
-    print(var)
-    1
+    
+    
 
 
      
@@ -148,13 +148,20 @@ while True:
     # Get the container element       
     selectorAll = '.messages-container'
     date_group = soup.select_one(selectorAll)
-    if date_group is None:
-        selectorAll = '.bubbles-inner.is-broadcast'
-        Messages_divs = date_group.select('.bubble-content.translatable-message')
-        
+    MsgContFalse = False
     if date_group is not None:
         Messages_divs = date_group.select('.text-content.clearfix.with-meta')
+        MsgContFalse = True
     
+    BBulFalse = False
+    if date_group is None:
+        all_bubbles = soup.select(".bubbles-inner")
+        date_group = all_bubbles[1]
+
+        Messages_divs = date_group.select('.translatable-message')
+        BBulFalse = True
+        
+   
 
    
 
@@ -182,6 +189,7 @@ while True:
 
        
         #print
+        print('--------------------------------------')
         print(text)
         messages_text.append(text)
         #db
@@ -210,10 +218,19 @@ while True:
     countPulls +=1
 
     #scoll to the bottom using js
-    driver.execute_script("""
-        document.querySelector('.MessageList').scrollTop = 
-        document.querySelector('.MessageList').scrollHeight;
-        """)
+    if MsgContFalse is True:
+        driver.execute_script("""
+            document.querySelector('.MessageList').scrollTop = 
+            document.querySelector('.MessageList').scrollHeight;
+            """)
+    
+
+    if BBulFalse is True:
+        driver.execute_script("""
+            document.querySelector('.bubbles>.scrollable').scrollTop = 
+            document.querySelector('.bubbles>.scrollable').scrollHeight;
+            """)
+    
     
     #añadir el randomness
     ti.sleep(1)
