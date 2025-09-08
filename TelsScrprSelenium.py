@@ -64,9 +64,9 @@ options.add_argument("--disable-dev-shm-usage")
 # Optional: reduce console logs
 options.add_argument("--log-level=3")
 # Start browser
-#driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
 
-driver = webdriver.Chrome(ChromeDriverManager().install())
+#driver = webdriver.Chrome(ChromeDriverManager().install())
 
 print('2.Selenium Running')
 print('3.Login')
