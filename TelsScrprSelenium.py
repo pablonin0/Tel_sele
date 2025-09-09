@@ -80,6 +80,7 @@ inputSuccess = 'n'
 
 while(inputSuccess != 'y'):
     driver.save_screenshot('DB&Imgs/tempImg/QR.png')
+    driver.refresh()
     print('Waiting Login print | y | if logged and | n | if not')
     inputSuccess = input()
 
@@ -155,7 +156,18 @@ while True:
     
     BBulFalse = False
     if date_group is None:
+        #all buble has 2 options
         all_bubbles = soup.select(".bubbles-inner")
+    
+        for bubbles in all_bubbles:
+            print('------------------------------------')
+            print(bubbles)
+
+    # Compare by length
+    text0 = all_bubbles[0].get_text(strip=True)
+    text1 = all_bubbles[1].get_text(strip=True)
+
+    if len(text1) > len(text0):
         date_group = all_bubbles[1]
 
         Messages_divs = date_group.select('.translatable-message')
@@ -166,9 +178,6 @@ while True:
    
 
 
-    
-
-    
     #in message_elements
     count = 0
     if countPulls == 0:
