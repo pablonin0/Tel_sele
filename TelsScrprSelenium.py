@@ -50,23 +50,34 @@ def OpenChat (chatNameLink):
     ti.sleep(15)
     driver.save_screenshot('DB&Imgs/tempImg/1-GRUP.png') 
 
+def OptionDriver(optionDriver):
+    if optionDriver == 1:
+        options = Options()
+        options.add_argument("--headless")  
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1920,1080")  
+        options.add_argument("--no-sandbox")  
+        options.add_argument("--disable-dev-shm-usage")  
+
+        # Optional: reduce console logs
+        options.add_argument("--log-level=3")
+        # Start browser
+        driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+
+    if optionDriver == 2:
+        driver = webdriver.Chrome(ChromeDriverManager().install())
+
+    return driver
+
+
 
 print('1.Start')
 
 #Options to run headless
-options = Options()
-options.add_argument("--headless")  
-options.add_argument("--disable-gpu")
-options.add_argument("--window-size=1920,1080")  
-options.add_argument("--no-sandbox")  
-options.add_argument("--disable-dev-shm-usage")  
 
-# Optional: reduce console logs
-options.add_argument("--log-level=3")
-# Start browser
-driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+driver = OptionDriver(2)
 
-#driver = webdriver.Chrome(ChromeDriverManager().install())
+
 
 print('2.Selenium Running')
 print('3.Login')
@@ -109,18 +120,6 @@ link2 = f'https://web.telegram.org/a/#?tgaddr=tg%3A%2F%2Fresolve%3Fdomain%{Gruop
 #stores messages text as a list
 messages_text = []
 
-# Define the full class list you're looking for
-class_list = [
-        "Message", "message-list-item", "first-in-group",
-        "allow-selection", "last-in-group", "has-views",
-        "shown", "open"
-    ]
-
-    
-#text-content clearfix with-meta
-class_list_text = [
-    'text-content', 'clearfix', 'with-meta'
-    ]
 countPulls = 0
 
 
@@ -131,18 +130,11 @@ print('5.pulling info')
 
 while True:
     
-    #gets the body element
-    #var = driver.find_element(By.TAG_NAME, 'body')
-    #from te body element extract all the body info un like page source that is limited
-    #var5 = driver.execute_script("return document.body.innerHTML")
-    #html_content = var.get_attribute('innerHTML')
-   
+    driver.get_screenshot_as_png('DB&Imgs/tempImg/PullingInfo.png')
+    
     html_content = driver.page_source
     soup = BeautifulSoup(html_content, 'html.parser')
     
-    
-
-
      
     #gettin al te children of messages container
     # Build the CSS selector
@@ -150,6 +142,7 @@ while True:
     selectorAll = '.messages-container'
     date_group = soup.select_one(selectorAll)
     MsgContFalse = False
+
     if date_group is not None:
         Messages_divs = date_group.select('.text-content.clearfix.with-meta')
         MsgContFalse = True
