@@ -14,6 +14,7 @@ from selenium.webdriver.chrome.options import Options
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime
+import psycopg2
 
 # ---------- SQLAlchemy ORM Setup ----------
 
@@ -28,7 +29,13 @@ class Message(Base):
     timestamp = Column(DateTime, default=datetime.now)
 
 # Create SQLite DB and session
-engine = create_engine("sqlite:///DB&Imgs/messages.db")
+# ---------- PostgreSQL Setup ----------
+
+DATABASE_URL = "postgresql://myuser:mypass@postgres_db:5432/mydb"
+
+engine = create_engine(DATABASE_URL)
+
+# Create tables in Postgres (if not already created)
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
@@ -75,7 +82,7 @@ print('1.Start')
 
 #Options to run headless
 
-driver = OptionDriver(2)
+driver = OptionDriver(1)
 
 
 
@@ -91,8 +98,9 @@ inputSuccess = 'n'
 
 while(inputSuccess != 'y'):
     driver.save_screenshot('DB&Imgs/tempImg/QR.png')
-    driver.refresh()
-    print('Waiting Login print | y | if logged and | n | if not')
+    print('Waiting Login print | y | if logged and | n | if not |input 3 to refesh')
+    if inputSuccess == '3':
+        driver.refresh()
     inputSuccess = input()
 
 print('LOGIN SUCCESFULLLLL!!!!')
@@ -127,28 +135,60 @@ countPulls = 0
 session.query(Message).delete()
 
 print('5.pulling info')
+countCicle =0
 
 while True:
     
-    driver.get_screenshot_as_png('DB&Imgs/tempImg/PullingInfo.png')
-    
+    driver.save_screenshot('DB&Imgs/tempImg/PullingInfo.png')
+    print('Screen shot TAKEN')
+   
+  
     html_content = driver.page_source
     soup = BeautifulSoup(html_content, 'html.parser')
+  
+    var ='a'
+    while var != 'exit':
+        if countCicle >= 1:
+            var = 'exit'
+            break
+
+        html_content = driver.page_source
+        print(html_content)
+        soup = BeautifulSoup(html_content, 'html.parser')
+
+        driver.save_screenshot('DB&Imgs/tempImg/PullingInfo.png')
+        ti.sleep(3)
+       
+        print('type | exit | for next step')
+        var = input()
+
+        #only runs a single time because if not it continouly asks every time
+        
+
+        print('sleep 30s')
+        ti.sleep(30)
+       
+    # el probelmas es que no se cargaba el bublle. <scrolll
+    #como el css no se cargaba a tiempo cunado busca la etiqueta no la encontrbaba 
+    #y se rompia
+    
     
      
     #gettin al te children of messages container
     # Build the CSS selector
     # Get the container element       
-    selectorAll = '.messages-container'
-    date_group = soup.select_one(selectorAll)
-    MsgContFalse = False
 
-    if date_group is not None:
-        Messages_divs = date_group.select('.text-content.clearfix.with-meta')
+    selectorAll = '.messages-container'
+    msgContainer_group = soup.select_one(selectorAll)
+    MsgContFalse = False
+    
+    #cambiar nombre a date gruop
+    if msgContainer_group is not None:
+        Messages_divs = msgContainer_group.select('.text-content.clearfix.with-meta')
         MsgContFalse = True
     
     BBulFalse = False
-    if date_group is None:
+    if msgContainer_group is None:
         #all buble has 2 options
         all_bubbles = soup.select(".bubbles-inner")
     
@@ -161,22 +201,20 @@ while True:
     text1 = all_bubbles[1].get_text(strip=True)
 
     if len(text1) > len(text0):
-        date_group = all_bubbles[1]
+        msgContainer_group = all_bubbles[1]
 
-        Messages_divs = date_group.select('.translatable-message')
+        Messages_divs = msgContainer_group.select('.translatable-message')
         BBulFalse = True
         
-   
-
-   
 
 
     #in message_elements
-    count = 0
+ 
     if countPulls == 0:
         RepetedMsgTest = []
-    
 
+    
+    count = 0
     for message in Messages_divs:
         
         textAll = message.get_text(separator="/n", strip=True)
@@ -198,6 +236,7 @@ while True:
         msgDb = Message(contentClean = textAll, contentRaw = text, GroupName = GruopNameLink)
         session.add(msgDb)
         count +=1
+        
     count = 0
     session.commit()  
     
@@ -226,13 +265,14 @@ while True:
             document.querySelector('.MessageList').scrollHeight;
             """)
     
-
+    #aqui esta el porsible error o bueno donde ya no mueve la barra
     if BBulFalse is True:
         driver.execute_script("""
             document.querySelector('.bubbles>.scrollable').scrollTop = 
             document.querySelector('.bubbles>.scrollable').scrollHeight;
             """)
     
+    countCicle +=1
     
     #añadir el randomness
     ti.sleep(1)
