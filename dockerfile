@@ -5,9 +5,6 @@ WORKDIR /app
 # Copy only requirements first (so dependency layer is cached)
 COPY requirements.txt .
 
-# Upgrade pip
-RUN python -m pip install --upgrade pip
-
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Chrome dependencies
